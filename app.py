@@ -37,6 +37,15 @@ import sys
 import json
 from pathlib import Path
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+# Support both local .env and Streamlit Cloud secrets
+for key in ["OPENAI_API_KEY", "DATABASE_URL", "QDRANT_URL", "QDRANT_API_KEY"]:
+    if key in st.secrets and not os.getenv(key):
+        os.environ[key] = st.secrets[key]
+
 sys.path.insert(0, str(Path(__file__).parent))
 
 from agents.archivist import ArchivistAgent

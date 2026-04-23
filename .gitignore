@@ -1,0 +1,12 @@
+cat > .gitignore << 'EOF'
+.env
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+chroma_db/
+second_brain.db
+*.db
+.DS_Store
+.idea/

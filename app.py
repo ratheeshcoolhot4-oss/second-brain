@@ -217,7 +217,7 @@ def main():
 
         entry_text = st.text_area(
             "Your entry",
-            placeholder="e.g. Accepted extra project today. Feeling tired and under money pressure. Said yes even though something felt off.",
+            placeholder="e.g. Feeling tired and under heavy pressure. Accepted many responsibilities though something felt off.",
             height=120,
             key=f"log_input_{st.session_state.log_counter}"  # ← stable, resets on counter change
         )

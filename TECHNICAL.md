@@ -1,10 +1,7 @@
 # 🧠 Second Brain — Technical Deep Dive
 ### One Layer Off: What's Actually Happening Inside
 
-> This document does not explain how to use the system.
 > It explains how the system works underneath.
-> Every abstraction is peeled back. Every design decision is justified.
-> If you've used LangChain or ChromaDB without knowing what they do internally — this is for you.
 
 ---
 
@@ -17,10 +14,9 @@
 5. [The Two-Call Split — Why One Schema Crashed Everything](#two-call-split)
 6. [Embeddings — The Geometry of Meaning](#embeddings)
 7. [Cosine Similarity — Why Not Sine, Tangent, or Euclidean](#cosine)
-8. [Vector Storage — How HNSW Finds Nearest Neighbors](#hnsw)
-9. [RAG — What "Augmented" Actually Means](#rag)
-10. [LangGraph — State Machines, Not Magic](#langgraph)
-11. [Schema Design — Every Decision Justified](#schema)
+8. [RAG — What "Augmented" Actually Means](#rag)
+9. [LangGraph — State Machines, Not Magic](#langgraph)
+10. [Schema Design ](#schema)
 
 ---
 
@@ -54,7 +50,6 @@ Enforce data contracts at             Pydantic schemas
 every boundary
 ```
 
-Every component has exactly one reason to exist. Nothing was added because it was trendy.
 
 ---
 
@@ -457,13 +452,6 @@ Vector B: [4, 8]    (pointing in SAME direction but longer)
 
 These two vectors point in exactly the same direction. They represent the same meaning — just at different scales. One is twice as long as the other.
 
-If we measured raw distance between them:
-```
-Euclidean distance = sqrt((4-2)² + (8-4)²) = sqrt(4+16) = sqrt(20) = 4.47
-```
-
-They'd appear different. But they're semantically identical.
-
 Now the key insight — **cosine only cares about direction, not length:**
 
 ```
@@ -579,53 +567,6 @@ Just the dot product. 1536 multiplications and additions. Extremely fast.
 
 ---
 
-<a name="hnsw"></a>
-## 8. Vector Storage — How HNSW Finds Nearest Neighbors
-
-Qdrant uses **HNSW (Hierarchical Navigable Small World)** graphs for approximate nearest neighbor search.
-
-**The naive approach — exact search:**
-
-Compare the query vector against every stored vector. With 10,000 events and 1536 dimensions:
-```
-10,000 × 1,536 = 15,360,000 multiplications per query
-```
-
-At scale this is too slow.
-
-**How HNSW works:**
-
-During insertion, each vector is connected to its nearest neighbors in a graph:
-
-```
-Level 2 (sparse):   A ────────────────── F
-                         \              /
-Level 1 (medium):   A ── C ── D ──── F
-                         |    |
-Level 0 (dense):    A─B─C─D─E─F─G─H─I
-```
-
-Higher levels are sparse long-range connections. Lower levels are dense short-range connections. This mimics "small world" networks — like how you can reach anyone on earth in 6 handshakes.
-
-**Search algorithm:**
-
-```
-1. Start at the entry point on the highest level
-2. Greedily move to whichever neighbor is closer to the query
-3. Drop to the next level
-4. Repeat until level 0
-5. At level 0, do a thorough local search
-6. Return the k nearest vectors found
-```
-
-This navigates from a rough global match to a precise local match. Result: 99%+ accuracy at 100x the speed of exact search.
-
-**Why "approximate"?**
-
-HNSW might miss the absolute nearest neighbor if it's in a different part of the graph. For semantic similarity in our use case, 99% accuracy is indistinguishable from 100% — close enough that a slightly-more-similar event never changes the recommendation.
-
----
-
 <a name="rag"></a>
 ## 9. RAG — What "Augmented" Actually Means
 
@@ -646,18 +587,18 @@ Step 1 — RETRIEVAL:
 Step 2 — AUGMENTED (the actual RAG step):
   Build this prompt:
 
-  "USER QUESTION: Should I take this project? I'm exhausted.
+  "USER QUESTION: Should I Play today.
 
    PAST SIMILAR EVENTS:
    [1] Event ID: abc123... | Date: 2026-03-03 | Similarity: 87%
-       What happened: Accepted project while tired and under money pressure
-       Emotional state: tired, pressured
+       What happened: Played on feb 24 while tired and got injured
+       Emotional state: tired, sick
        Confidence at time: 2/10
        Outcome: Burnout after 3 weeks
 
    [2] Event ID: def456... | Date: 2026-08-12 | Similarity: 81%
-       What happened: Said yes to extra work despite exhaustion
-       Emotional state: overwhelmed, stressed
+       What happened: Said yes to basket ball
+       Emotional state: lost, stressed
        Outcome: Stress spike, conflict with team"
 
 Step 3 — GENERATION:
@@ -737,21 +678,6 @@ graph.add_conditional_edges(
 ```
 
 The graph structure IS the control flow. Not if/else buried in functions — explicit edges visible in the graph definition.
-
-**Why `functools.partial` for dependency injection:**
-
-LangGraph calls node functions with only `(state,)` as argument. But our nodes need `db` and `query_engine`. `partial()` pre-fills those:
-
-```python
-from functools import partial
-
-graph.add_node("retrieve", partial(retrieve_node, query_engine=query_engine))
-
-# When LangGraph calls: retrieve_node(state)
-# It actually calls:    retrieve_node(state, query_engine=query_engine)
-```
-
-Dependency injection without a framework. Clean, explicit, zero magic.
 
 ---
 
@@ -834,7 +760,6 @@ and it only works because the two streams were kept separate from day one.
 
 ## The Design Philosophy
 
-Every component in this system was chosen because it was the right tool — not because it was popular.
 
 The questions that drove every decision:
 
@@ -844,10 +769,6 @@ The questions that drove every decision:
 3. What are the failure modes?
 4. Why this approach and not the obvious alternative?
 ```
-
-If you've read this far, you know the answers for every layer of this stack.
-
-That's one layer off.
 
 ---
 

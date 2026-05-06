@@ -23,9 +23,6 @@
 <a name="architecture"></a>
 ## 1. Architecture — Why These Components
 
-Most AI apps are built by stitching together whatever framework is popular. This one was designed from the data requirements first.
-
-The question was: **what does a system need to reason over your life history?**
 
 ```
 REQUIREMENT                          COMPONENT CHOSEN

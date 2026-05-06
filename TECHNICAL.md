@@ -212,7 +212,6 @@ When you write "I couldn't think straight" — the tokens for "couldn't", "think
 <a name="structured-output"></a>
 ## 4. Structured Output — Grammar-Constrained Decoding
 
-This is one of the most misunderstood features in production LLM systems.
 
 ### What Most People Think Happens
 

@@ -712,7 +712,7 @@ Neither can replace the other.
 ### Why `embedding_summary` Instead Of `action_description`
 
 ```
-action_description:  "Accepted the Rebalance project, manager pushed hard"
+action_description:  "Accepted the Rebalance project, team pushed hard"
                       ↑ "Rebalance" is a proper noun
                       ↑ Pulls the vector toward a specific named entity
                       ↑ Query "new project under pressure" won't find it

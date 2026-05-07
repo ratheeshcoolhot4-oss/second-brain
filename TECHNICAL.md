@@ -517,7 +517,7 @@ Euclidean distance measures how far apart two points are in space.
 It is sensitive to magnitude (vector length).
 
 "I accepted work while exhausted" (short entry) → vector of length 1.0
-"I accepted work while exhausted because my manager pressured me 
+"I accepted work while exhausted because my wife pressured me 
  and money was tight and I couldn't think straight" (long entry)
  → vector of length 1.8 (more content = different magnitude)
 
